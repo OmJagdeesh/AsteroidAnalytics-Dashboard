@@ -85,6 +85,18 @@ docker-compose exec neo-ui streamlit run streamlit_ui.py
 *   **Streamlit UI**: [http://localhost:8501](http://localhost:8501)
 *   **Grafana**: [http://localhost:3000](http://localhost:3000) (Default login: `admin` / `admin`)
 
+## 🧹 Resetting Data
+
+If you change the `START_DATE` and `END_DATE` in your `.env` file, the new data will be **added** to the existing database alongside any data you previously fetched. Streamlit and Grafana will show all data currently in the database.
+
+If you want to wipe the database and start completely fresh with only the dates currently in your `.env` file, you must delete the Docker persistent volumes:
+
+```bash
+docker-compose down -v
+docker-compose up -d --build
+```
+Then, rerun the 4 steps in the "Run the Pipeline" section.
+
 ## 📁 Project Structure
 
 *   `fetch_raw.py`: Data ingestion script.
