@@ -9,6 +9,9 @@ import plotly.express as px
 import plotly.graph_objects as go
 from sqlalchemy import create_engine
 from datetime import datetime
+from dotenv import load_dotenv
+
+load_dotenv(override=True)
 
 # Configuration
 DB_HOST = os.getenv('DB_HOST', 'timescaledb')

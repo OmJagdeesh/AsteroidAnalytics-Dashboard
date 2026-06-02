@@ -1,6 +1,10 @@
 import os
 import time
 from datetime import datetime
+from dotenv import load_dotenv
+
+load_dotenv(override=True)
+
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import (
     to_date,

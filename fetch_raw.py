@@ -10,6 +10,10 @@ from kafka import KafkaProducer
 import psycopg2
 from psycopg2.extras import execute_values
 import time
+from dotenv import load_dotenv
+
+# Dynamically load .env to override container env vars
+load_dotenv(override=True)
 
 # Configuration
 NASA_API_KEY = os.getenv('NASA_API_KEY', 'DEMO_KEY')

@@ -10,6 +10,9 @@ from pyspark.sql.functions import (
 )
 from pyspark.sql.types import StructType, StructField, StringType, FloatType, BooleanType
 import time
+from dotenv import load_dotenv
+
+load_dotenv(override=True)
 
 KAFKA_BOOTSTRAP = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'kafka:9092')
 KAFKA_TOPIC = os.getenv('KAFKA_TOPIC', 'neo-raw-data')
