@@ -7,6 +7,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import plotly.io as pio
 from sqlalchemy import create_engine
 from datetime import datetime
 from dotenv import load_dotenv
@@ -72,8 +73,83 @@ def main():
     st.set_page_config(
         page_title="NASA NEO Analytics Dashboard",
         page_icon="🌌",
-        layout="wide"
+        layout="wide",
+        initial_sidebar_state="expanded"
     )
+    
+    # Premium Custom CSS
+    st.markdown("""
+        <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        
+        html, body, [class*="css"] {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Glassmorphic Metrics */
+        div[data-testid="metric-container"] {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        div[data-testid="metric-container"]:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px 0 rgba(0, 255, 255, 0.2);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+        }
+        div[data-testid="metric-container"] label {
+            color: #a0a0a0 !important;
+            font-size: 1rem !important;
+        }
+        div[data-testid="metric-container"] div[data-testid="stMetricValue"] {
+            color: #ffffff !important;
+            font-weight: 800 !important;
+        }
+        
+        /* Fancy Titles */
+        h1 {
+            background: -webkit-linear-gradient(45deg, #00f2fe, #4facfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800 !important;
+        }
+        h2, h3 {
+            color: #e0e0e0 !important;
+            font-weight: 600 !important;
+        }
+        
+        /* Sidebar styling */
+        section[data-testid="stSidebar"] {
+            background: linear-gradient(180deg, #111119 0%, #0d1222 100%);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        /* Dataframes */
+        div[data-testid="stDataFrame"] {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        /* Plotly Containers */
+        .js-plotly-plot {
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        </style>
+    """, unsafe_allow_html=True)
+    
+    # Set premium plotly defaults
+    pio.templates.default = "plotly_dark"
+    pio.templates["plotly_dark"].layout.paper_bgcolor = "rgba(0,0,0,0)"
+    pio.templates["plotly_dark"].layout.plot_bgcolor = "rgba(0,0,0,0)"
     
     st.title("🌌 NASA Near-Earth Object Analytics Dashboard")
     st.markdown("Real-time monitoring of asteroid approaches using Kafka, Spark & TimescaleDB")

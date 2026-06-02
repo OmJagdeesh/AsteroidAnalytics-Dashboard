@@ -66,7 +66,7 @@ def wait_for_services():
             time.sleep(2)
 
 def fetch_nasa_data(start_date, end_date):
-    """Fetch data from NASA NEO API"""
+    """Fetch data from NASA NEO API with exponential backoff"""
     url = "https://api.nasa.gov/neo/rest/v1/feed"
     params = {
         'start_date': start_date,
@@ -74,12 +74,29 @@ def fetch_nasa_data(start_date, end_date):
         'api_key': NASA_API_KEY
     }
     
-    response = requests.get(url, params=params, timeout=30)
+    max_retries = 4
+    base_delay = 2
     
-    if response.status_code == 200:
-        return response.json()
-    else:
-        raise Exception(f"API Error: {response.status_code} - {response.text}")
+    for attempt in range(max_retries):
+        try:
+            response = requests.get(url, params=params, timeout=30)
+            
+            if response.status_code == 200:
+                return response.json()
+            elif response.status_code == 429:
+                print(f"   ⚠️  Rate limit hit. Retrying in {base_delay ** attempt} seconds...")
+            else:
+                print(f"   ⚠️  API Error {response.status_code}: {response.text}")
+                
+        except requests.exceptions.RequestException as e:
+            print(f"   ⚠️  Network error: {str(e)}")
+            
+        if attempt < max_retries - 1:
+            delay = base_delay ** attempt
+            print(f"   🔄 Retrying in {delay} seconds (Attempt {attempt + 1}/{max_retries})...")
+            time.sleep(delay)
+            
+    raise Exception(f"Failed to fetch data from NASA API after {max_retries} attempts.")
 
 def flatten_asteroid(asteroid):
     """Flatten nested asteroid structure"""

@@ -56,28 +56,28 @@ The application containers (`neo-app` and `neo-ui`) start in a waiting state. Yo
 
 **Step 1: Start Data Fetching**
 ```bash
-docker-compose exec neo-app python fetch_raw.py
+docker-compose exec neo-app python src/fetch_raw.py
 ```
 *This will fetch data for the configured date range and send it to Kafka.*
 
 **Step 2: Start Spark Processor**
 Open a new terminal and run:
 ```bash
-docker-compose exec neo-app python spark_processor.py
+docker-compose exec neo-app python src/spark_processor.py
 ```
 *This starts the streaming job. Keep this terminal open.*
 
 **Step 3: Start Metrics Aggregator**
 Open a new terminal and run:
 ```bash
-docker-compose exec neo-app python calculate_metrics_data.py
+docker-compose exec neo-app python src/calculate_metrics_data.py
 ```
 *This continuously calculates daily statistics.*
 
 **Step 4: Launch Streamlit Dashboard**
 Open a new terminal and run:
 ```bash
-docker-compose exec neo-ui streamlit run streamlit_ui.py
+docker-compose exec neo-ui streamlit run src/streamlit_ui.py
 ```
 
 ## 📊 Accessing the Dashboards
@@ -99,13 +99,20 @@ Then, rerun the 4 steps in the "Run the Pipeline" section.
 
 ## 📁 Project Structure
 
-*   `fetch_raw.py`: Data ingestion script.
-*   `spark_processor.py`: Spark Structured Streaming logic.
-*   `calculate_metrics_data.py`: Daily metrics aggregation.
-*   `streamlit_ui.py`: Dashboard application.
-*   `db-init.sql`: Database initialization script.
-*   `docker-compose.yml`: Container orchestration.
-
+```text
+├── src/                          # Main application code
+│   ├── fetch_raw.py              # Data ingestion script
+│   ├── spark_processor.py        # Spark Structured Streaming logic
+│   ├── calculate_metrics_data.py # Daily metrics aggregation
+│   └── streamlit_ui.py           # Dashboard application
+├── utils/                        # Utility scripts
+│   └── verify_kafka.py           # Consumer to verify Kafka messages
+├── db-init.sql                   # Database schema
+├── docker-compose.yml            # Container orchestration
+├── Dockerfile                    
+├── requirements.txt              
+└── README.md                     
+```
 ## 📝 License
 
 [MIT](LICENSE)
