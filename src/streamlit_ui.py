@@ -8,66 +8,76 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import plotly.io as pio
-from sqlalchemy import create_engine
+import psycopg2
 from datetime import datetime
 from dotenv import load_dotenv
 
-load_dotenv(override=True)
+load_dotenv(override=False)
 
 # Configuration
-DB_HOST = os.getenv('DB_HOST', 'timescaledb')
+DB_HOST = os.getenv('DB_HOST', 'localhost')
 DB_PORT = os.getenv('DB_PORT', '5432')
 DB_NAME = os.getenv('DB_NAME', 'neo_db')
 DB_USER = os.getenv('DB_USER', 'neo_user')
 DB_PASSWORD = os.getenv('DB_PASSWORD', 'neo_password')
 
 # Create database connection
-@st.cache_resource
-def get_db_engine():
-    return create_engine(
-        f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
-    )
+def get_db_connection():
+    connection_params = {
+        "host": DB_HOST,
+        "port": DB_PORT,
+        "dbname": DB_NAME,
+        "user": DB_USER,
+        "password": DB_PASSWORD,
+    }
+
+    try:
+        return psycopg2.connect(**connection_params)
+    except psycopg2.OperationalError:
+        if DB_HOST in {"timescaledb", "postgres", "db"}:
+            return psycopg2.connect(**{**connection_params, "host": "localhost"})
+        raise
+
+def read_sql(query):
+    with get_db_connection() as conn:
+        return pd.read_sql(query, conn)
 
 @st.cache_data(ttl=60)
 def load_raw_data():
-    engine = get_db_engine()
     query = """
     SELECT * FROM neo_raw 
     ORDER BY close_approach_date DESC 
     LIMIT 10000
     """
-    return pd.read_sql(query, engine)
+    return read_sql(query)
 
 @st.cache_data(ttl=60)
 def load_processed_data():
-    engine = get_db_engine()
     query = """
     SELECT * FROM neo_processed 
     ORDER BY close_approach_date DESC 
     LIMIT 10000
     """
-    return pd.read_sql(query, engine)
+    return read_sql(query)
 
 @st.cache_data(ttl=60)
 def load_daily_metrics():
-    engine = get_db_engine()
     query = "SELECT * FROM neo_daily_metrics ORDER BY metric_date"
-    return pd.read_sql(query, engine)
+    return read_sql(query)
 
 @st.cache_data(ttl=60)
 def get_summary_stats():
-    engine = get_db_engine()
     query = """
     SELECT 
         COUNT(*) as total_asteroids,
-        SUM(CASE WHEN is_potentially_hazardous THEN 1 ELSE 0 END) as hazardous_count,
-        AVG(risk_score) as avg_risk_score,
-        SUM(CASE WHEN is_anomaly THEN 1 ELSE 0 END) as anomaly_count,
+        COALESCE(SUM(CASE WHEN is_potentially_hazardous THEN 1 ELSE 0 END), 0) as hazardous_count,
+        COALESCE(AVG(risk_score), 0) as avg_risk_score,
+        COALESCE(SUM(CASE WHEN is_anomaly THEN 1 ELSE 0 END), 0) as anomaly_count,
         MIN(close_approach_date) as start_date,
         MAX(close_approach_date) as end_date
     FROM neo_processed
     """
-    return pd.read_sql(query, engine).iloc[0]
+    return read_sql(query).iloc[0]
 
 def main():
     st.set_page_config(
